@@ -4,6 +4,7 @@ from geoip import geolite2
 from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
+utc = pytz.utc
 
 app = Flask(__name__)
 
@@ -28,7 +29,7 @@ def return_local_time(utchour):
         abort(500)
     # Get Hour for 8pm in given TZ
     ## Create unix epoch from given time:
-    utc_epoch = utchour * 60 * 60
+    utc_epoch = utchour * 60 * 60 - 100
     ## Generate a datetime type variable from that epoch
     utc_dt = utc.localize(datetime.utcfromtimestamp(utc_epoch))
     ## Generate TZ Type element
@@ -43,4 +44,4 @@ def index():
     abort(404)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
