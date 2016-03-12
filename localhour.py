@@ -37,7 +37,7 @@ def return_local_time(utchour):
     ## Convert and normalize
     local = tz.normalize(utc_dt.astimezone(tz))
     # Return the Hour for local 8pm
-    return str(local.hour)
+    return str('{ "hour": ' + local.hour + ' }')
 
 @app.route('/', methods=['GET'])
 def index():
