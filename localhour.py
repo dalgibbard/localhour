@@ -11,9 +11,9 @@ app = Flask(__name__)
 # eg. '20' = 20:00 UTC, which returns '15' (for 15:00 Eastern Time)
 @app.route('/timediff/<int:utchour>', methods=['GET'])
 def return_local_time(utchour):
-    if utchour = 24:
+    if utchour == 24:
         utchour = 0
-    if not 0 =< utchour =< 23:
+    if not 0 <= utchour <= 23:
         print("Invalid UTC Hour: " + utchour)
         abort(500)
     # Do GeoIP based on remote IP to determine TZ
@@ -30,7 +30,7 @@ def return_local_time(utchour):
     ## Create unix epoch from given time:
     utc_epoch = utchour * 60 * 60
     ## Generate a datetime type variable from that epoch
-    utc_dt = utc.localize(datetime.utcfromtimestamp(utc_epoch)
+    utc_dt = utc.localize(datetime.utcfromtimestamp(utc_epoch))
     ## Generate TZ Type element
     tz = timezone(match.timezone)
     ## Convert and normalize
