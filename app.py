@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # API Endpoint to return a specific UTC Hour as the Requesting IP's Timezone
 # eg. '20' = 20:00 UTC, which returns '15' (for 15:00 Eastern Time)
-@app.route('/timediff/<int:utchour>', methods=['GET'])
+@app.route('/localhour/<int:utchour>', methods=['GET'])
 def return_local_time(utchour):
     app.logger.info(str(request.remote_addr) + '[' + str(datetime.utcnow()) + '] Request: GET /timediff/' + str(utchour))
     if utchour == 24:
@@ -46,7 +46,7 @@ def return_local_time(utchour):
 @app.route('/', methods=['GET'])
 def index():
     app.logger.info(str(request.remote_addr) + '[' + str(datetime.utcnow()) + '] Request: GET /')
-    return('<html>You probably want /timediff/(utc_hour)<br /><br />'
+    return('<html>You probably want /localhour/(utc_hour)<br /><br />'
            '-- This is an API endpoint that converts a given UTC Hour<br />'
            '-- to the timezone of the requesting IP based on GeoIP lookup</html>')
 
