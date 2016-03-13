@@ -60,3 +60,9 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# Docker build
+docker/
+
+# Flask log
+flask.log
