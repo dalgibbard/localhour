@@ -20,6 +20,6 @@ To run in docker:
 * Copy the Dockerfile in:
 ```cp ../localhour/Dockerfile .```
 * Build the docker container
-```docker build -t localhour .```
+```docker build --no-cache=true -t localhour .```
 * Run it, allowing access to the app, on the host machine, on port 8000:
 ```docker run -d -p 8000:80 --name localhour localhour```

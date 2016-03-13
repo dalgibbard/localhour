@@ -6,10 +6,12 @@ from pytz import timezone
 import pytz
 import logging
 from logging.handlers import RotatingFileHandler
+from werkzeug.contrib.fixers import ProxyFix
 
 utc = pytz.utc
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # API Endpoint to return a specific UTC Hour as the Requesting IP's Timezone
 # eg. '20' = 20:00 UTC, which returns '15' (for 15:00 Eastern Time)
