@@ -9,7 +9,7 @@ http20 = Net:HTTP.new(uri20.host, uri20.port)
 http20.use_ssl = true
 http20.verify_mode = OpenSSL::SSL::VERIFY_NONE
 request20 = Net::HTTP::Get.new(uri20.request_uri)
-response20 = http.request(request20)
+response20 = http20.request(request20)
 hour20 = JSON.parse(response20.body)['hour']
 
 # Get 1am in localDC time
@@ -18,7 +18,7 @@ http1 = Net:HTTP.new(uri1.host, uri1.port)
 http1.use_ssl = true
 http1.verify_mode = OpenSSL::SSL::VERIFY_NONE
 request1 = Net::HTTP::Get.new(uri1.request_uri)
-response1 = http.request(request1)
+response1 = http1.request(request1)
 hour1 = JSON.parse(response1.body)['hour']
 
 
