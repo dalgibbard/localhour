@@ -2,16 +2,20 @@
 from flask import Flask, abort, request
 from geoip import geolite2
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, country_timezones, UnknownTimeZoneError
 import pytz
 import logging
 from logging.handlers import RotatingFileHandler
 from werkzeug.contrib.fixers import ProxyFix
+import urllib2, json
 
 utc = pytz.utc
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
+handler = RotatingFileHandler('/var/log/flask.log', maxBytes=10240, backupCount=1)
+handler.setLevel(logging.INFO)
+app.logger.addHandler(handler)
 
 # API Endpoint to return a specific UTC Hour as the Requesting IP's Timezone
 # eg. '20' = 20:00 UTC, which returns '15' (for 15:00 Eastern Time)
@@ -33,21 +37,29 @@ def return_local_time(utchour):
     if match is None:
         app.logger.error(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + "] Failed to match IP to GeoIP data")
         return str('{ "error": "no geoip match for IP ' + str(request.remote_addr) + '" }')
-    app.logger.info(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Matched IP to timezone: ' + str(match.timezone))
+    try: 
+        app.logger.info(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Matched IP to timezone: ' + str(match.timezone))
+    except Exception as e:
+        return str('{ "error": "Error: ' + str(e) + ' - whilst getting match.timezone" }')
     # Get Hour for 8pm in given TZ
     ## Create unix epoch from given time:
     utc_epoch = utchour * 60 * 60 - 100
     ## Generate a datetime type variable from that epoch
     utc_dt = utc.localize(datetime.utcfromtimestamp(utc_epoch))
     ## Generate TZ Type element
-    tz = timezone(match.timezone)
+    try:
+        tz = timezone(match.timezone)
+    except UnknownTimeZoneError:
+        tz = timezone(country_timezones(match.country)[0])
+    except Exception as e:
+        return str('{ "error": "Error: ' + str(e) + '" }')
     ## Convert and normalize
     local = tz.normalize(utc_dt.astimezone(tz))
     # Return the Hour for local 8pm
-    app.logger.info(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Returning value: ' + str(local.hour) + ' for UTC hour ' + str(utchour) + ' in Timezone + ' str(match.timezone))
+    app.logger.info(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Returning value: ' + str(local.hour) + ' for UTC hour ' + str(utchour) + ' in Timezone ' + str(match.timezone))
     return str('{ "hour": ' + str(local.hour) + ' }')
 
-@app.route('/', methods=['GET'])
+@app.route('/localhour', methods=['GET'])
 def index():
     app.logger.info(str(request.remote_addr) + '[' + str(datetime.utcnow()) + '] Request: GET /')
     return('<html>You probably want /localhour/(utc_hour)<br /><br />'
@@ -55,7 +67,4 @@ def index():
            '-- to the timezone of the requesting IP based on GeoIP lookup</html>')
 
 if __name__ == '__main__':
-    handler = RotatingFileHandler('/var/log/flask.log', maxBytes=10240, backupCount=1)
-    handler.setLevel(logging.INFO)
-    app.logger.addHandler(handler)
-    app.run(host='0.0.0.0', debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
