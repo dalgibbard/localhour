@@ -33,6 +33,7 @@ def return_local_time(utchour):
     if match is None:
         app.logger.error(str(request.remote_addr) + '[' + str(datetime.utcnow()) + "] Failed to match IP to GeoIP data")
         return str('{ "error": "no geoip match for IP ' + str(request.remote_addr) + '" }')
+    app.logger.info(str(request.remote_addr) + '[' + str(datetime.utcnow()) + '] Matched IP to timezone: ' + str(match.timezone))
     # Get Hour for 8pm in given TZ
     ## Create unix epoch from given time:
     utc_epoch = utchour * 60 * 60 - 100
@@ -41,7 +42,7 @@ def return_local_time(utchour):
     ## Generate TZ Type element
     tz = timezone(match.timezone)
     ## Convert and normalize
-    local = tz.normalize(utc_dt.astimezone(tz))
+    local = tz.normalize(tz.astimezone(utc_dt))
     # Return the Hour for local 8pm
     return str('{ "hour": ' + str(local.hour) + ' }')
 
