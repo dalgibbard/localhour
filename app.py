@@ -42,7 +42,7 @@ def return_local_time(utchour):
     ## Generate TZ Type element
     tz = timezone(match.timezone)
     ## Convert and normalize
-    local = tz.normalize(tz.astimezone(utc_dt))
+    local = tz.normalize(utc_dt.astimezone(tz))
     # Return the Hour for local 8pm
     return str('{ "hour": ' + str(local.hour) + ' }')
 
