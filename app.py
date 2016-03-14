@@ -7,7 +7,6 @@ import pytz
 import logging
 from logging.handlers import RotatingFileHandler
 from werkzeug.contrib.fixers import ProxyFix
-import urllib2, json
 
 utc = pytz.utc
 
