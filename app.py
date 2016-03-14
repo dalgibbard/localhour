@@ -17,23 +17,23 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 # eg. '20' = 20:00 UTC, which returns '15' (for 15:00 Eastern Time)
 @app.route('/localhour/<int:utchour>', methods=['GET'])
 def return_local_time(utchour):
-    app.logger.info(str(request.remote_addr) + '[' + str(datetime.utcnow()) + '] Request: GET /timediff/' + str(utchour))
+    app.logger.info(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Request: GET /timediff/' + str(utchour))
     if utchour == 24:
         utchour = 0
     if not 0 <= utchour <= 23:
-        app.logger.warning(str(request.remote_addr) + '[' + str(datetime.utcnow()) +  '] Invalid utchour ' + str(utchour))
+        app.logger.warning(str(request.remote_addr) + ' [' + str(datetime.utcnow()) +  '] Invalid utchour ' + str(utchour))
         return str('{ "error": "invalid utchour ' + str(utchour) + '" }')
     # Do GeoIP based on remote IP to determine TZ
     try:
         match = geolite2.lookup(request.remote_addr)
     except Exception as e:
-        app.logger.error(str(request.remote_addr) + '[' + str(datetime.utcnow()) + '] Error: ' + str(e) + ' - whilst matching GeoIP data for IP')
+        app.logger.error(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Error: ' + str(e) + ' - whilst matching GeoIP data for IP')
         return str('{ "error": "error looking up match for IP ' + str(request.remote_addr) + '" }')
     # Check we got a match
     if match is None:
-        app.logger.error(str(request.remote_addr) + '[' + str(datetime.utcnow()) + "] Failed to match IP to GeoIP data")
+        app.logger.error(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + "] Failed to match IP to GeoIP data")
         return str('{ "error": "no geoip match for IP ' + str(request.remote_addr) + '" }')
-    app.logger.info(str(request.remote_addr) + '[' + str(datetime.utcnow()) + '] Matched IP to timezone: ' + str(match.timezone))
+    app.logger.info(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Matched IP to timezone: ' + str(match.timezone))
     # Get Hour for 8pm in given TZ
     ## Create unix epoch from given time:
     utc_epoch = utchour * 60 * 60 - 100
@@ -44,6 +44,7 @@ def return_local_time(utchour):
     ## Convert and normalize
     local = tz.normalize(utc_dt.astimezone(tz))
     # Return the Hour for local 8pm
+    app.logger.info(str(request.remote_addr) + ' [' + str(datetime.utcnow()) + '] Returning value: ' + str(local.hour) + ' for UTC hour ' + str(utchour) + ' in Timezone ' str(match.timezone))
     return str('{ "hour": ' + str(local.hour) + ' }')
 
 @app.route('/', methods=['GET'])
@@ -54,7 +55,7 @@ def index():
            '-- to the timezone of the requesting IP based on GeoIP lookup</html>')
 
 if __name__ == '__main__':
-    handler = RotatingFileHandler('flask.log', maxBytes=10240, backupCount=1)
+    handler = RotatingFileHandler('/var/log/flask.log', maxBytes=10240, backupCount=1)
     handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
     app.run(host='0.0.0.0', debug=False)
