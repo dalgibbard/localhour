@@ -3,33 +3,38 @@ require 'net/https'
 require "uri"
 require 'json'
 
-# Get 8pm in localDC time
-uri20 = URI.parse("https://dgunix.com/localhour/20")
-http20 = Net:HTTP.new(uri20.host, uri20.port)
-http20.use_ssl = true
-http20.verify_mode = OpenSSL::SSL::VERIFY_NONE
-request20 = Net::HTTP::Get.new(uri20.request_uri)
-response20 = http20.request(request20)
-hour20 = JSON.parse(response20.body)['hour']
-
-# Get 1am in localDC time
-uri1 = URI.parse("https://dgunix.com/localhour/1")
-http1 = Net:HTTP.new(uri1.host, uri1.port)
-http1.use_ssl = true
-http1.verify_mode = OpenSSL::SSL::VERIFY_NONE
-request1 = Net::HTTP::Get.new(uri1.request_uri)
-response1 = http1.request(request1)
-hour1 = JSON.parse(response1.body)['hour']
-
-
-Facter.add('compacthour') do
-  setcode do
-    hour20
+if Facter.value(:fqdn).match(/(^cdb-.*$|^.*-cdb-.*$)/)
+  # Get 9pm in localDC time
+  uri21 = URI.parse("https://dgunix.com/localhour/21")
+  http21 = Net::HTTP.new(uri21.host, uri21.port)
+  http21.use_ssl = true
+  http21.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  request21 = Net::HTTP::Get.new(uri21.request_uri)
+  response21 = http21.request(request21)
+  hour21 = JSON.parse(response21.body)['hour']
+  
+  # Get 5am in localDC time
+  uri5 = URI.parse("https://dgunix.com/localhour/5")
+  http5 = Net::HTTP.new(uri5.host, uri5.port)
+  http5.use_ssl = true
+  http5.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  request5 = Net::HTTP::Get.new(uri5.request_uri)
+  response5 = http5.request(request5)
+  hour5 = JSON.parse(response5.body)['hour']
+  
+  ##To use as an external fact instead:
+  # puts "compacthour: #{hour21}"
+  # puts "viewcompact: #{hour5}" 
+  
+  Facter.add('compacthour') do
+    setcode do
+      hour21
+    end
   end
-end
-
-Facter.add('otherhour') do
-  setcode do
-    hour1
+  
+  Facter.add('viewcompact') do
+    setcode do
+      hour5
+    end
   end
 end
